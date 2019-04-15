@@ -58,8 +58,8 @@ def featureExtractionDirWrapper(directory, mt_win, mt_step, st_win, st_step):
 def featureVisualizationDirWrapper(directory):
     if not os.path.isdir(directory):
         raise Exception("Input folder not found!")
-    aV.visualizeFeaturesFolder(directory, "pca", "")
-    #aV.visualizeFeaturesFolder(directory, "lda", "artist")
+    # aV.visualizeFeaturesFolder(directory, "pca", "")
+    aV.visualizeFeaturesFolder(directory, "lda", "artist")
 
 
 def fileSpectrogramWrapper(wav_file):
@@ -260,9 +260,38 @@ def thumbnailWrapper(inputFile, thumbnailWrapperSize):
           " -- {2:4.1f}sec".format(thumbnailWrapperFileName2, B1, B2))
 
     # Plot self-similarity matrix:
+    import colorcet as cc
+    from matplotlib.colors import LinearSegmentedColormap
+
+    print('colorcet cc.fire', cc.fire[:5])
     fig = plt.figure()
     ax = fig.add_subplot(111, aspect="auto")
-    plt.imshow(Smatrix)
+    # cmap = LinearSegmentedColormap.from_list("fire", cc.bgy, 256)
+    # cmap = cc.cm['glasbey_bw']
+    # cmap = cc.cm['glasbey_category10']
+    # cmap = cc.cm['CET_D1A']
+    # cmap = cc.cm['CET_L19']
+    # cmap = cc.cm['CET_L17']
+    # cmap = cc.cm['colorwheel']
+    cmap = cc.cm['isolum']
+    plt.imshow(Smatrix, cmap=cmap)
+    plt.axis('off')
+
+    plt.gca().set_axis_off()
+    plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
+            hspace = 0, wspace = 0)
+    plt.margins(0,0)
+    plt.gca().xaxis.set_major_locator(plt.NullLocator())
+    plt.gca().yaxis.set_major_locator(plt.NullLocator())
+    # savefig("filename.pdf", bbox_inches = 'tight', pad_inches = 0)
+    # fig.savefig(inputFile.replace(".wav", "_thumb1.png"), dpi=300)
+    if inputFile.endswith(".wav"):
+        filename = inputFile.replace(".wav", "_thumb1.png")
+    if inputFile.endswith(".mp3"):
+        filename = inputFile.replace(".mp3", "_thumb1.png")
+
+    fig.savefig(filename, bbox_inches = 'tight', pad_inches = 0, dpi=300)
+    plt.axis('on')
     # Plot best-similarity diagonal:
     Xcenter = (A1 / st_step + A2 / st_step) / 2.0
     Ycenter = (B1 / st_step + B2 / st_step) / 2.0
@@ -289,7 +318,7 @@ def thumbnailWrapper(inputFile, thumbnailWrapperSize):
 
     plt.xlabel("frame no")
     plt.ylabel("frame no")
-    plt.title("Self-similarity matrix")
+    plt.title("Self-similarity matrix {0}".format(inputFile.split("/")[-1]))
 
     plt.show()
 
