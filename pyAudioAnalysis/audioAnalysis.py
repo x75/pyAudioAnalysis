@@ -231,6 +231,34 @@ def speakerDiarizationWrapper(inputFile, numSpeakers, useLDA):
     else:
         aS.speakerDiarization(inputFile, numSpeakers, lda_dim=0, plot_res=True)
 
+def getcmap():
+    import colorcet as cc
+    from matplotlib.colors import LinearSegmentedColormap
+    # cmap = LinearSegmentedColormap.from_list("fire", cc.bgy, 256)
+    # cmap = cc.cm['glasbey_bw']
+    # cmap = cc.cm['glasbey_category10']
+    # cmap = cc.cm['CET_D1A']
+    # cmap = cc.cm['CET_L19']
+    # cmap = cc.cm['CET_L17']
+    # cmap = cc.cm['colorwheel']
+    cmap = cc.cm['isolum']
+    return cmap
+
+def savefig_plotonly(fig=None, filename=None):
+    plt.axis('off')
+    plt.gca().set_axis_off()
+    plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
+            hspace = 0, wspace = 0)
+    plt.margins(0,0)
+    plt.gca().xaxis.set_major_locator(plt.NullLocator())
+    plt.gca().yaxis.set_major_locator(plt.NullLocator())
+    # savefig("filename.pdf", bbox_inches = 'tight', pad_inches = 0)
+    # fig.savefig(inputFile.replace(".wav", "_thumb1.png"), dpi=300)
+    if fig is None:
+        fig = plt.gcf()
+    if filename is None:
+        filename = inputFile + ".png"
+    fig.savefig(filename, bbox_inches = 'tight', pad_inches = 0, dpi=300)
 
 def thumbnailWrapper(inputFile, thumbnailWrapperSize):
     st_window = 0.5
@@ -249,48 +277,25 @@ def thumbnailWrapper(inputFile, thumbnailWrapperSize):
     if inputFile.endswith(".wav"):
         thumbnailWrapperFileName1 = inputFile.replace(".wav", "_thumb1.wav")
         thumbnailWrapperFileName2 = inputFile.replace(".wav", "_thumb2.wav")
+        thumbnailWrapperFileName3Png = inputFile.replace(".wav", "_thumb1.png")
     if inputFile.endswith(".mp3"):
         thumbnailWrapperFileName1 = inputFile.replace(".mp3", "_thumb1.mp3")
         thumbnailWrapperFileName2 = inputFile.replace(".mp3", "_thumb2.mp3")
+        thumbnailWrapperFileName3Png = inputFile.replace(".mp3", "_thumb1.png")
     wavfile.write(thumbnailWrapperFileName1, fs, x[int(fs * A1):int(fs * A2)])
     wavfile.write(thumbnailWrapperFileName2, fs, x[int(fs * B1):int(fs * B2)])
     print("1st thumbnailWrapper (stored in file {0:s}): {1:4.1f}sec" \
           " -- {2:4.1f}sec".format(thumbnailWrapperFileName1, A1, A2))
     print("2nd thumbnailWrapper (stored in file {0:s}): {1:4.1f}sec" \
           " -- {2:4.1f}sec".format(thumbnailWrapperFileName2, B1, B2))
-
-    # Plot self-similarity matrix:
-    import colorcet as cc
-    from matplotlib.colors import LinearSegmentedColormap
-
-    print('colorcet cc.fire', cc.fire[:5])
+    
+    # Plot self-similarity matrix:    
     fig = plt.figure()
     ax = fig.add_subplot(111, aspect="auto")
-    # cmap = LinearSegmentedColormap.from_list("fire", cc.bgy, 256)
-    # cmap = cc.cm['glasbey_bw']
-    # cmap = cc.cm['glasbey_category10']
-    # cmap = cc.cm['CET_D1A']
-    # cmap = cc.cm['CET_L19']
-    # cmap = cc.cm['CET_L17']
-    # cmap = cc.cm['colorwheel']
-    cmap = cc.cm['isolum']
-    plt.imshow(Smatrix, cmap=cmap)
-    plt.axis('off')
-
-    plt.gca().set_axis_off()
-    plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
-            hspace = 0, wspace = 0)
-    plt.margins(0,0)
-    plt.gca().xaxis.set_major_locator(plt.NullLocator())
-    plt.gca().yaxis.set_major_locator(plt.NullLocator())
-    # savefig("filename.pdf", bbox_inches = 'tight', pad_inches = 0)
-    # fig.savefig(inputFile.replace(".wav", "_thumb1.png"), dpi=300)
-    if inputFile.endswith(".wav"):
-        filename = inputFile.replace(".wav", "_thumb1.png")
-    if inputFile.endswith(".mp3"):
-        filename = inputFile.replace(".mp3", "_thumb1.png")
-
-    fig.savefig(filename, bbox_inches = 'tight', pad_inches = 0, dpi=300)
+    plt.imshow(Smatrix, cmap=getcmap())
+    
+    savefig_plotonly(fig, thumbnailWrapperFileName3Png)
+    
     plt.axis('on')
     # Plot best-similarity diagonal:
     Xcenter = (A1 / st_step + A2 / st_step) / 2.0
