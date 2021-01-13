@@ -231,17 +231,20 @@ def speakerDiarizationWrapper(inputFile, numSpeakers, useLDA):
     else:
         aS.speakerDiarization(inputFile, numSpeakers, lda_dim=0, plot_res=True)
 
-def getcmap():
+def getcmap(cmap=None):
     import colorcet as cc
     from matplotlib.colors import LinearSegmentedColormap
-    # cmap = LinearSegmentedColormap.from_list("fire", cc.bgy, 256)
-    # cmap = cc.cm['glasbey_bw']
-    # cmap = cc.cm['glasbey_category10']
-    # cmap = cc.cm['CET_D1A']
-    # cmap = cc.cm['CET_L19']
-    # cmap = cc.cm['CET_L17']
-    # cmap = cc.cm['colorwheel']
-    cmap = cc.cm['isolum']
+    if cmap is None:
+        # cmap = LinearSegmentedColormap.from_list("fire", cc.bgy, 256)
+        # cmap = cc.cm['glasbey_bw']
+        # cmap = cc.cm['glasbey_category10']
+        # cmap = cc.cm['CET_D1A']
+        # cmap = cc.cm['CET_L19']
+        # cmap = cc.cm['CET_L17']
+        # cmap = cc.cm['colorwheel']
+        cmap = cc.cm['isolum']
+    else:
+        cmap = cc.cm[cmap]
     return cmap
 
 def savefig_plotonly(fig=None, filename=None):
@@ -260,7 +263,7 @@ def savefig_plotonly(fig=None, filename=None):
         filename = inputFile + ".png"
     fig.savefig(filename, bbox_inches = 'tight', pad_inches = 0, dpi=300)
 
-def thumbnailWrapper(inputFile, thumbnailWrapperSize):
+def thumbnailWrapper(inputFile, thumbnailWrapperSize, thumbnailColormap):
     st_window = 0.5
     st_step = 0.5
     if not os.path.isfile(inputFile):
@@ -289,10 +292,15 @@ def thumbnailWrapper(inputFile, thumbnailWrapperSize):
     print("2nd thumbnailWrapper (stored in file {0:s}): {1:4.1f}sec" \
           " -- {2:4.1f}sec".format(thumbnailWrapperFileName2, B1, B2))
     
-    # Plot self-similarity matrix:    
+    # Plot self-similarity matrix:
+    if thumbnailColormap is None:
+        cmap = getcmap()
+    else:
+        cmap = getcmap(thumbnailColormap)
+    
     fig = plt.figure()
     ax = fig.add_subplot(111, aspect="auto")
-    plt.imshow(Smatrix, cmap=getcmap())
+    plt.imshow(Smatrix, cmap=cmap)
     
     savefig_plotonly(fig, thumbnailWrapperFileName3Png)
     
@@ -558,6 +566,7 @@ def parse_arguments():
     thumb = tasks.add_parser("thumbnail",
                              help="Generate a thumbnailWrapper "
                                   "for an audio file")
+    thumb.add_argument("-c", "--cmap", default=None, help="Color map used for plotting")
     thumb.add_argument("-i", "--input", required=True, help="input audio file")
     thumb.add_argument("-s", "--size",  default=10.0,  type=float,
                        help="thumbnailWrapper size in seconds.")
@@ -648,4 +657,4 @@ if __name__ == "__main__":
         aS.speakerDiarizationEvaluateScript(args.input, args.LDAs)
     elif args.task == "thumbnail":
         # Audio thumbnailing
-        thumbnailWrapper(args.input, args.size)
+        thumbnailWrapper(args.input, args.size, args.cmap)
